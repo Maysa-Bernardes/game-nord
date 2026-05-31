@@ -1,0 +1,541 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+}
+
+#__next {
+  width: 100%;
+  height: 100%;
+}
+
+.game-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-image: url('/Fundo.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* BOTÃO DE RESET NO TOPO */
+.top-reset-button {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.reset-button-top {
+  padding: 10px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #046792;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.reset-button-top:hover {
+  background-color: #034568;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* MENSAGEM DE VITÓRIA */
+.winner-message {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.winner-message p {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  margin: 0;
+}
+
+/* GAME BOARD - PERSONAGENS NO CENTRO */
+.game-board {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 20px 60px 60px 60px;
+  gap: 60px;
+  position: relative;
+}
+
+/* SEÇÕES DOS PERSONAGENS */
+.character-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  max-width: 450px;
+}
+
+.hero-section {
+  align-items: flex-start;
+  padding-left: 0;
+}
+
+.villain-section {
+  align-items: flex-end;
+  padding-right: 0;
+}
+
+/* CABEÇALHO DO PERSONAGEM (NOME + BARRA DE VIDA + STATUS) */
+.character-header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.character-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+.hero-section .character-name {
+  text-align: left;
+}
+
+.villain-section .character-name {
+  text-align: right;
+}
+
+/* BARRA DE VIDA */
+.life-bar {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 3px solid #2d5016;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.life-fill {
+  height: 100%;
+  background-color: #22c55e;
+  width: 100%;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.life-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shine 2s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.life-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+
+/* STATUS DO PERSONAGEM */
+.character-status {
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+  letter-spacing: 1px;
+  height: 24px;
+  line-height: 24px;
+}
+
+.status-defending {
+  color: #fef08a;
+  animation: pulse-warning 1s infinite;
+}
+
+.status-attacking {
+  color: #ef4444;
+  animation: pulse-attack 1s infinite;
+}
+
+.status-waiting {
+  color: #94a3b8;
+}
+
+.status-ended {
+  color: #888;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes pulse-attack {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* IMAGEM DO PERSONAGEM */
+.character-image {
+  width: 100%;
+  height: 500px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+}
+
+.character-image img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+}
+
+/* AÇÃO DO VILÃO */
+.villain-action {
+  position: absolute;
+  right: 60px;
+  bottom: 180px;
+  text-align: right;
+}
+
+.villain-action-text {
+  color: #e0e7ff;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* CONTAINER DE AÇÕES */
+.actions-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  position: absolute;
+  left: 60px;
+  width: auto;
+  max-width: 280px;
+  bottom: 60px;
+  z-index: 50;
+}
+
+/* BOTÕES DE AÇÃO */
+.action-button {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 110px;
+  background-color: #0891b2;
+}
+
+.action-button:hover:not(:disabled) {
+  background-color: #0e7490;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.action-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.action-button:disabled {
+  background-color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.attack-button {
+  background-color: #046792;
+}
+
+.attack-button:hover:not(:disabled) {
+  background-color: #034568;
+}
+
+.defend-button {
+  background-color: #046792;
+}
+
+.defend-button:hover:not(:disabled) {
+  background-color: #034568;
+}
+
+.potion-button {
+  background-color: #046792;
+}
+
+.potion-button:hover:not(:disabled) {
+  background-color: #034568;
+}
+
+.flee-button {
+  background-color: #046792;
+}
+
+.flee-button:hover:not(:disabled) {
+  background-color: #034568;
+}
+
+/* MENSAGEM DE STATUS */
+.status-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #dc2626;
+  color: white;
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: pulse-attack 1s infinite;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  z-index: 60;
+}
+
+/* MENSAGEM DE FIM DE JOGO */
+.game-end-message {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px 40px;
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  border: 2px solid;
+}
+
+.game-end-message.win {
+  border-color: #22c55e;
+}
+
+.game-end-message.win p {
+  color: #22c55e;
+  font-size: 28px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.game-end-message.lose {
+  border-color: #dc2626;
+}
+
+.game-end-message.lose p {
+  color: #dc2626;
+  font-size: 28px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+}
+
+.reset-button {
+  padding: 12px 30px;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #f59e0b;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.reset-button:hover {
+  background-color: #d97706;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* LOG DE AÇÕES - OVERLAY NO CANTO */
+.game-log {
+  display: none;
+}
+
+.log-messages {
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.log-message {
+  color: #e0e7ff;
+  font-size: 12px;
+  padding: 6px 8px;
+  margin: 4px 0;
+  background-color: rgba(100, 150, 200, 0.2);
+  border-left: 2px solid #64b5f6;
+  border-radius: 2px;
+  line-height: 1.4;
+}
+
+/* SCROLLBAR PERSONALIZADA */
+.log-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.log-messages::-webkit-scrollbar-thumb {
+  background: rgba(100, 150, 200, 0.4);
+  border-radius: 3px;
+}
+
+.log-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 150, 200, 0.6);
+}
+
+/* RESPONSIVO */
+@media (max-width: 1200px) {
+  .game-board {
+    padding: 30px 40px 50px 40px;
+    gap: 40px;
+  }
+
+  .character-section {
+    max-width: 350px;
+  }
+
+  .character-image {
+    height: 280px;
+  }
+
+  .character-name {
+    font-size: 28px;
+  }
+
+  .game-footer {
+    padding: 15px 40px;
+    flex-wrap: wrap;
+  }
+
+  .game-log {
+    width: 280px;
+    max-height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-board {
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    gap: 30px;
+  }
+
+  .character-section {
+    max-width: 250px;
+    align-items: center;
+  }
+
+  .hero-section,
+  .villain-section {
+    align-items: center;
+  }
+
+  .hero-section .character-name,
+  .villain-section .character-name {
+    text-align: center;
+  }
+
+  .character-image {
+    height: 200px;
+  }
+
+  .character-name {
+    font-size: 24px;
+  }
+
+  .actions-container {
+    gap: 10px;
+  }
+
+  .action-button {
+    padding: 10px 16px;
+    font-size: 12px;
+    min-width: 80px;
+  }
+
+  .game-footer {
+    flex-direction: column;
+    padding: 15px;
+    min-height: auto;
+  }
+
+  .game-log {
+    position: static;
+    width: 100%;
+    max-height: 150px;
+    margin-top: 10px;
+  }
+}
