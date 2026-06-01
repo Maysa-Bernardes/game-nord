@@ -20,7 +20,7 @@ html, body {
   position: relative;
   width: 100%;
   height: 100vh;
-  background-image: url('./Fundo.png');
+  background-image: url('/game-nord/Fundo.png');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
