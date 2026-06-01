@@ -1,6 +1,5 @@
 'use client'
-import Character from "@/app/components/Character";
-import { useGameManager } from "@/app/hooks/gameManager";
+import { useGameManager, HERO_MAX_DEFENSE } from "@/app/hooks/gameManager";
 import "./style.css"
 
 export default function Home() {
@@ -9,7 +8,6 @@ export default function Home() {
     villain,
     gameState,
     isHeroTurn,
-    gameLog,
     handleHeroAction,
     resetGame,
     disabledActions,
@@ -105,7 +103,7 @@ export default function Home() {
           </button>
           <button 
             className="action-button defend-button"
-            disabled={hero.life <= 0 || heroDefenseCount >= 2}
+            disabled={hero.life <= 0 || heroDefenseCount >= HERO_MAX_DEFENSE}
             onClick={() => handleHeroAction("defense")}
           >
             DEFENDER
@@ -126,13 +124,6 @@ export default function Home() {
           </button>
         </div>
       )}
-      <div className="game-log">
-        <div className="log-messages">
-          {gameLog.map((log, index) => (
-            <p key={index} className="log-message">{log}</p>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

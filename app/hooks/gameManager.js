@@ -5,18 +5,30 @@ const INITIAL_LIFE = 100;
 const ATTACK_DAMAGE = 20;
 const POTION_HEAL = 30;
 const MAX_POTIONS = 3;
-const VILLAIN_DEFEND_CHANCE = 0.15; 
+const VILLAIN_DEFEND_CHANCE = 0.15;
+const HERO_MAX_DEFENSE = 2;
+const VILLAIN_MAX_DEFENSE = 3;
+const VILLAIN_FLEE_LIFE_THRESHOLD = 10;
+const VILLAIN_LOW_LIFE_THRESHOLD = 30;
+const VILLAIN_HIGH_LIFE_THRESHOLD = 60;
+
+const CHARACTER_NAMES = {
+  HERO: 'Roxas',
+  VILLAIN: 'Sephiroth',
+};
+
+export { HERO_MAX_DEFENSE, VILLAIN_MAX_DEFENSE, VILLAIN_DEFEND_CHANCE, INITIAL_LIFE, ATTACK_DAMAGE, POTION_HEAL, MAX_POTIONS, CHARACTER_NAMES };
 
 export const useGameManager = () => {
   const [hero, setHero] = useState({
-    name: 'Roxas',
+    name: CHARACTER_NAMES.HERO,
     life: INITIAL_LIFE,
     potions: MAX_POTIONS,
     incomingAttack: false,
   });
 
   const [villain, setVillain] = useState({
-    name: 'Sephiroth',
+    name: CHARACTER_NAMES.VILLAIN,
     life: INITIAL_LIFE,
     potions: MAX_POTIONS,
     incomingAttack: false,
@@ -233,7 +245,7 @@ export const useGameManager = () => {
     let newVillainIncomingAttack = currentVillain.incomingAttack;
     
     if (currentHero.incomingAttack) {
-      const canDefend = gameStateRef.current.villainDefenseCount < 3 && !gameStateRef.current.villainLastWasDefense;
+      const canDefend = gameStateRef.current.villainDefenseCount < VILLAIN_MAX_DEFENSE && !gameStateRef.current.villainLastWasDefense;
       const willDefend = canDefend && Math.random() < VILLAIN_DEFEND_CHANCE;
       
       if (willDefend) {
@@ -286,7 +298,7 @@ export const useGameManager = () => {
         
         let action;
         
-        if (newVillainLife <= 10) {
+        if (newVillainLife <= VILLAIN_FLEE_LIFE_THRESHOLD) {
           const rand = Math.random();
           if (rand < 0.15) {
             action = 'flee';
@@ -337,7 +349,7 @@ export const useGameManager = () => {
       
       let action;
       
-      if (currentVillain.life <= 10) {
+      if (currentVillain.life <= VILLAIN_FLEE_LIFE_THRESHOLD) {
         
         const rand = Math.random();
         if (rand < 0.15) {
@@ -347,7 +359,7 @@ export const useGameManager = () => {
         } else {
           action = 'attack';
         }
-      } else if (currentVillain.life > 60) {
+      } else if (currentVillain.life > VILLAIN_HIGH_LIFE_THRESHOLD) {
         
         action = 'attack';
       } else {
