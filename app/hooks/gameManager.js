@@ -25,7 +25,6 @@ export const useGameManager = () => {
   const [gameState, setGameState] = useState('playing'); // playing, heroWins, villainWins
   const [isHeroTurn, setIsHeroTurn] = useState(true);
   const [gameLog, setGameLog] = useState(['Jogo iniciado!']);
-  const [lastAction, setLastAction] = useState(null);
   const [villainLastAction, setVillainLastAction] = useState(null);
   const [disabledActions, setDisabledActions] = useState([]);
   const [timeLeft, setTimeLeft] = useState(5);
@@ -36,22 +35,19 @@ export const useGameManager = () => {
   const defenseTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
 
-  // Refs para armazenar valores atuais sem criar dependências
-  const heroRef = useRef(hero);
-  const villainRef = useRef(villain);
-  const isHeroTurnRef = useRef(isHeroTurn);
-  const gameStateRef = useRef(gameState);
-  const villainDefenseCountRef = useRef(villainDefenseCount);
-  const villainLastWasDefenseRef = useRef(villainLastWasDefense);
+  // Consolidar refs em um único objeto para simplificar o gerenciamento
+  const gameStateRef = useRef({
+    hero,
+    villain,
+    isHeroTurn,
+    gameState,
+    villainDefenseCount,
+    villainLastWasDefense,
+  });
 
-  // Atualiza os refs quando os estados mudam
+  // Atualiza o ref consolidado quando os estados mudam
   useEffect(() => {
-    heroRef.current = hero;
-    villainRef.current = villain;
-    isHeroTurnRef.current = isHeroTurn;
-    gameStateRef.current = gameState;
-    villainDefenseCountRef.current = villainDefenseCount;
-    villainLastWasDefenseRef.current = villainLastWasDefense;
+    gameStateRef.current = { hero, villain, isHeroTurn, gameState, villainDefenseCount, villainLastWasDefense };
   }, [hero, villain, isHeroTurn, gameState, villainDefenseCount, villainLastWasDefense]);
 
   // Adiciona mensagem ao log
@@ -76,7 +72,7 @@ export const useGameManager = () => {
 
   // Processa a ação do herói
   const handleHeroAction = useCallback((action) => {
-    if (!isHeroTurnRef.current || gameStateRef.current !== 'playing') return;
+    if (!gameStateRef.current.isHeroTurn || gameStateRef.current.gameState !== 'playing') return;
 
     // Limpa o timer de defesa se existir
     if (countdownTimerRef.current) {
@@ -89,16 +85,16 @@ export const useGameManager = () => {
     }
     setTimeLeft(5);
 
-    let newHeroLife = heroRef.current.life;
-    let newVillainLife = villainRef.current.life;
-    let newHeroPotions = heroRef.current.potions;
-    let newVillainIncomingAttack = villainRef.current.incomingAttack;
-    let newHeroIncomingAttack = heroRef.current.incomingAttack;
+    let newHeroLife = gameStateRef.current.hero.life;
+    let newVillainLife = gameStateRef.current.villain.life;
+    let newHeroPotions = gameStateRef.current.hero.potions;
+    let newVillainIncomingAttack = gameStateRef.current.villain.incomingAttack;
+    let newHeroIncomingAttack = gameStateRef.current.hero.incomingAttack;
 
     // Se há ataque do vilão vindo, herói precisa defender ou sofrer dano
-    if (villainRef.current.incomingAttack) {
+    if (gameStateRef.current.villain.incomingAttack) {
       if (action === 'defense') {
-        addLog(`⚔️ ${heroRef.current.name} se defendeu! Bloqueou o ataque!`);
+        addLog(`⚔️ ${gameStateRef.current.hero.name} se defendeu! Bloqueou o ataque!`);
         newVillainIncomingAttack = false;
         setHeroDefenseCount(prev => prev + 1);
         
@@ -119,7 +115,7 @@ export const useGameManager = () => {
         setIsHeroTurn(false);
         return;
       } else if (action === 'flee') {
-        addLog(`🏃 ${heroRef.current.name} correu e perdeu o jogo!`);
+        addLog(`🏃 ${gameStateRef.current.hero.name} correu e perdeu o jogo!`);
         
         setHero(prev => ({
           ...prev,
@@ -140,7 +136,7 @@ export const useGameManager = () => {
       } else {
         // Sofre dano e executa a ação
         newHeroLife -= ATTACK_DAMAGE;
-        addLog(`💥 ${heroRef.current.name} sofreu ${ATTACK_DAMAGE} de dano! (vida: ${Math.max(0, newHeroLife)})`);
+        addLog(`💥 ${gameStateRef.current.hero.name} sofreu ${ATTACK_DAMAGE} de dano! (vida: ${Math.max(0, newHeroLife)})`);
         newVillainIncomingAttack = false;
 
         if (checkWinner(newHeroLife, newVillainLife)) {
@@ -164,14 +160,14 @@ export const useGameManager = () => {
         // Executa a ação após sofrer dano
         if (action === 'attack') {
           newVillainIncomingAttack = true;
-          addLog(`⚔️ ${heroRef.current.name} atacou o ${villainRef.current.name}!`);
+          addLog(`⚔️ ${gameStateRef.current.hero.name} atacou o ${gameStateRef.current.villain.name}!`);
         } else if (action === 'usePotion') {
           if (newHeroPotions > 0) {
             newHeroLife = Math.min(INITIAL_LIFE, newHeroLife + POTION_HEAL);
             newHeroPotions--;
-            addLog(`💊 ${heroRef.current.name} usou uma poção! Recuperou ${POTION_HEAL} de vida. (Poções restantes: ${newHeroPotions})`);
+            addLog(`💊 ${gameStateRef.current.hero.name} usou uma poção! Recuperou ${POTION_HEAL} de vida. (Poções restantes: ${newHeroPotions})`);
           } else {
-            addLog(`❌ ${heroRef.current.name} não tem mais poções!`);
+            addLog(`❌ ${gameStateRef.current.hero.name} não tem mais poções!`);
           }
         }
       }
@@ -179,20 +175,20 @@ export const useGameManager = () => {
       // Não há ataque vindo
       if (action === 'attack') {
         newHeroIncomingAttack = true;
-        addLog(`⚔️ ${heroRef.current.name} está preparando um ataque!`);
+        addLog(`⚔️ ${gameStateRef.current.hero.name} está preparando um ataque!`);
       } else if (action === 'defense') {
-        addLog(`🛡️ ${heroRef.current.name} ficou em guarda!`);
+        addLog(`🛡️ ${gameStateRef.current.hero.name} ficou em guarda!`);
         setHeroDefenseCount(prev => prev + 1);
       } else if (action === 'usePotion') {
         if (newHeroPotions > 0) {
           newHeroLife = Math.min(INITIAL_LIFE, newHeroLife + POTION_HEAL);
           newHeroPotions--;
-          addLog(`💊 ${heroRef.current.name} usou uma poção! Recuperou ${POTION_HEAL} de vida. (Poções restantes: ${newHeroPotions})`);
+          addLog(`💊 ${gameStateRef.current.hero.name} usou uma poção! Recuperou ${POTION_HEAL} de vida. (Poções restantes: ${newHeroPotions})`);
         } else {
-          addLog(`❌ ${heroRef.current.name} não tem mais poções!`);
+          addLog(`❌ ${gameStateRef.current.hero.name} não tem mais poções!`);
         }
       } else if (action === 'flee') {
-        addLog(`🏃 ${heroRef.current.name} correu e perdeu o jogo!`);
+        addLog(`🏃 ${gameStateRef.current.hero.name} correu e perdeu o jogo!`);
         
         setHero(prev => ({
           ...prev,
@@ -242,7 +238,7 @@ export const useGameManager = () => {
       // Vilão tem 15% de chance de defender, mas só se:
       // 1. Tiver defesas restantes (< 3)
       // 2. NÃO defendeu na última ação
-      const canDefend = villainDefenseCountRef.current < 3 && !villainLastWasDefenseRef.current;
+      const canDefend = gameStateRef.current.villainDefenseCount < 3 && !gameStateRef.current.villainLastWasDefense;
       const willDefend = canDefend && Math.random() < VILLAIN_DEFEND_CHANCE;
       
       if (willDefend) {
@@ -462,7 +458,7 @@ export const useGameManager = () => {
 
   // Aplica dano automático quando o tempo acabar (sem executar ação)
   useEffect(() => {
-    if (timeLeft === 0 && isHeroTurnRef.current && villainRef.current.incomingAttack && gameStateRef.current === 'playing') {
+    if (timeLeft === 0 && gameStateRef.current.isHeroTurn && gameStateRef.current.villain.incomingAttack && gameStateRef.current.gameState === 'playing') {
       // Aplica dano por não defender
       setHero(prev => {
         const newLife = Math.max(0, prev.life - ATTACK_DAMAGE);
@@ -534,7 +530,6 @@ export const useGameManager = () => {
     setIsHeroTurn(true);
     setGameLog(['Jogo reiniciado!']);
     setVillainLastAction(null);
-    setLastAction(null);
     setDisabledActions([]);
     setTimeLeft(5);
     setHeroDefenseCount(0);
