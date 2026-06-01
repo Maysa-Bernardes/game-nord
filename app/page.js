@@ -19,9 +19,8 @@ export default function Home() {
   } = useGameManager();
 
   return (
-    <div className="game-container">
-      {/* BOTÃO DE RESET NO TOPO */}
-      {gameState !== 'playing' && (
+    <div className="game-container">      
+    {gameState !== 'playing' && (
         <div className="top-reset-button">
           <button className="reset-button-top" onClick={resetGame}>Novo Jogo</button>
           <div className="winner-message">
@@ -32,7 +31,6 @@ export default function Home() {
       )}
       
       <div className="game-board">
-        {/* HERÓI - ESQUERDA */}
         <div className="character-section hero-section">
           <div className="character-header">
             <h1 className="character-name">RAGNAR</h1>
@@ -62,7 +60,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* VILÃO - DIREITA */}
         <div className="character-section villain-section">
           <div className="character-header">
             <h1 className="character-name">BJORN</h1>
@@ -94,13 +91,9 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* MENSAGEM DE STATUS */}
       {villain.incomingAttack && gameState === 'playing' && (
         <div className="status-message">VILÃO ESTÁ ATACANDO</div>
       )}
-
-      {/* BOTÕES DO HERÓI - ESQUERDA */}
       {gameState === 'playing' && isHeroTurn && (
         <div className="actions-container">
           <button 
@@ -133,8 +126,6 @@ export default function Home() {
           </button>
         </div>
       )}
-
-      {/* LOG DE AÇÕES - OVERLAY */}
       <div className="game-log">
         <div className="log-messages">
           {gameLog.map((log, index) => (

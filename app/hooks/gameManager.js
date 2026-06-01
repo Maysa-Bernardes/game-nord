@@ -5,7 +5,7 @@ const INITIAL_LIFE = 100;
 const ATTACK_DAMAGE = 20;
 const POTION_HEAL = 30;
 const MAX_POTIONS = 3;
-const VILLAIN_DEFEND_CHANCE = 0.15; // 15% de chance de defender
+const VILLAIN_DEFEND_CHANCE = 0.15; 
 
 export const useGameManager = () => {
   const [hero, setHero] = useState({
@@ -22,7 +22,7 @@ export const useGameManager = () => {
     incomingAttack: false,
   });
 
-  const [gameState, setGameState] = useState('playing'); // playing, heroWins, villainWins
+  const [gameState, setGameState] = useState('playing'); 
   const [isHeroTurn, setIsHeroTurn] = useState(true);
   const [gameLog, setGameLog] = useState(['Jogo iniciado!']);
   const [villainLastAction, setVillainLastAction] = useState(null);
@@ -35,7 +35,7 @@ export const useGameManager = () => {
   const defenseTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
 
-  // Consolidar refs em um único objeto para simplificar o gerenciamento
+  
   const gameStateRef = useRef({
     hero,
     villain,
@@ -45,17 +45,17 @@ export const useGameManager = () => {
     villainLastWasDefense,
   });
 
-  // Atualiza o ref consolidado quando os estados mudam
+  
   useEffect(() => {
     gameStateRef.current = { hero, villain, isHeroTurn, gameState, villainDefenseCount, villainLastWasDefense };
   }, [hero, villain, isHeroTurn, gameState, villainDefenseCount, villainLastWasDefense]);
 
-  // Adiciona mensagem ao log
+  
   const addLog = useCallback((message) => {
     setGameLog(prev => [...prev, message]);
   }, []);
 
-  // Verifica se há um vencedor
+  
   const checkWinner = useCallback((heroLife, villainLife) => {
     if (heroLife <= 0) {
       setGameState('villainWins');
@@ -70,11 +70,11 @@ export const useGameManager = () => {
     return false;
   }, [addLog]);
 
-  // Processa a ação do herói
+  
   const handleHeroAction = useCallback((action) => {
     if (!gameStateRef.current.isHeroTurn || gameStateRef.current.gameState !== 'playing') return;
 
-    // Limpa o timer de defesa se existir
+    
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
       countdownTimerRef.current = null;
@@ -91,14 +91,14 @@ export const useGameManager = () => {
     let newVillainIncomingAttack = gameStateRef.current.villain.incomingAttack;
     let newHeroIncomingAttack = gameStateRef.current.hero.incomingAttack;
 
-    // Se há ataque do vilão vindo, herói precisa defender ou sofrer dano
+    
     if (gameStateRef.current.villain.incomingAttack) {
       if (action === 'defense') {
         addLog(`⚔️ ${gameStateRef.current.hero.name} se defendeu! Bloqueou o ataque!`);
         newVillainIncomingAttack = false;
         setHeroDefenseCount(prev => prev + 1);
         
-        // Atualiza estados e passa a vez imediatamente
+        
         setHero(prev => ({
           ...prev,
           life: newHeroLife,
@@ -134,7 +134,7 @@ export const useGameManager = () => {
         setIsHeroTurn(false);
         return;
       } else {
-        // Sofre dano e executa a ação
+        
         newHeroLife -= ATTACK_DAMAGE;
         addLog(`💥 ${gameStateRef.current.hero.name} sofreu ${ATTACK_DAMAGE} de dano! (vida: ${Math.max(0, newHeroLife)})`);
         newVillainIncomingAttack = false;
@@ -157,7 +157,7 @@ export const useGameManager = () => {
           return;
         }
 
-        // Executa a ação após sofrer dano
+        
         if (action === 'attack') {
           newVillainIncomingAttack = true;
           addLog(`⚔️ ${gameStateRef.current.hero.name} atacou o ${gameStateRef.current.villain.name}!`);
@@ -172,7 +172,7 @@ export const useGameManager = () => {
         }
       }
     } else {
-      // Não há ataque vindo
+      
       if (action === 'attack') {
         newHeroIncomingAttack = true;
         addLog(`⚔️ ${gameStateRef.current.hero.name} está preparando um ataque!`);
@@ -225,19 +225,14 @@ export const useGameManager = () => {
     setIsHeroTurn(false);
   }, [addLog, checkWinner]);
 
-  // Vilão escolhe uma ação aleatória
   const villainTurn = useCallback((currentHero, currentVillain) => {
     let newHeroLife = currentHero.life;
     let newVillainLife = currentVillain.life;
     let newVillainPotions = currentVillain.potions;
     let newHeroIncomingAttack = currentHero.incomingAttack;
     let newVillainIncomingAttack = currentVillain.incomingAttack;
-
-    // Se há ataque do herói vindo, vilão precisa DEFENDER ou SOFRER DANO
+    
     if (currentHero.incomingAttack) {
-      // Vilão tem 15% de chance de defender, mas só se:
-      // 1. Tiver defesas restantes (< 3)
-      // 2. NÃO defendeu na última ação
       const canDefend = gameStateRef.current.villainDefenseCount < 3 && !gameStateRef.current.villainLastWasDefense;
       const willDefend = canDefend && Math.random() < VILLAIN_DEFEND_CHANCE;
       
@@ -247,8 +242,7 @@ export const useGameManager = () => {
         setVillainDefenseCount(prev => prev + 1);
         setVillainLastWasDefense(true);
         newHeroIncomingAttack = false;
-
-        // Atualiza estados e passa a vez imediatamente
+        
         setHero(prev => ({
           ...prev,
           life: newHeroLife,
@@ -265,7 +259,7 @@ export const useGameManager = () => {
         setIsHeroTurn(true);
         return;
       } else {
-        // Sofre dano primeiro
+        
         newVillainLife -= ATTACK_DAMAGE;
         addLog(`💥 ${currentVillain.name} sofreu ${ATTACK_DAMAGE} de dano! (vida: ${Math.max(0, newVillainLife)})`);
         setVillainLastAction('Levou dano');
@@ -289,13 +283,10 @@ export const useGameManager = () => {
           setIsHeroTurn(true);
           return;
         }
-
-        // Depois de sofrer dano, vilão escolhe uma ação: atacar ou poção
-        // SÓ pode FUGIR se vida <= 10
+        
         let action;
         
         if (newVillainLife <= 10) {
-          // Vida muito baixa: pode fugir (15%), poção (70%) ou ataque (15%)
           const rand = Math.random();
           if (rand < 0.15) {
             action = 'flee';
@@ -305,7 +296,7 @@ export const useGameManager = () => {
             action = 'attack';
           }
         } else {
-          // Vida > 10: SÓ pode atacar ou poção (sem fuga)
+          
           action = newVillainPotions > 0 ? (Math.random() < 0.6 ? 'attack' : 'usePotion') : 'attack';
         }
 
@@ -343,12 +334,11 @@ export const useGameManager = () => {
         }
       }
     } else {
-      // Não há ataque vindo - vilão sempre escolhe entre: ATACAR, POÇÃO
-      // SÓ pode FUGIR se vida <= 10
+      
       let action;
       
       if (currentVillain.life <= 10) {
-        // Vida muito baixa: pode fugir (15%), poção (70%) ou ataque (15%)
+        
         const rand = Math.random();
         if (rand < 0.15) {
           action = 'flee';
@@ -358,10 +348,10 @@ export const useGameManager = () => {
           action = 'attack';
         }
       } else if (currentVillain.life > 60) {
-        // Se vida alta, prioriza ataque
+        
         action = 'attack';
       } else {
-        // Vida média: escolhe entre ataque ou poção (SEM fuga)
+        
         if (currentVillain.potions > 0) {
           action = Math.random() < 0.6 ? 'attack' : 'usePotion';
         } else {
@@ -382,7 +372,7 @@ export const useGameManager = () => {
           setVillainLastAction('Usou poção');
           setVillainLastWasDefense(false);
         } else {
-          // Se não tem poção, ataca
+          
           newVillainIncomingAttack = true;
           addLog(`⚔️ ${currentVillain.name} está preparando um ataque!`);
           setVillainLastAction('Está atacando');
@@ -428,7 +418,6 @@ export const useGameManager = () => {
     setIsHeroTurn(true);
   }, [addLog, checkWinner]);
 
-  // Executa turno do vilão após uma pequena pausa
   useEffect(() => {
     if (!isHeroTurn && gameState === 'playing') {
       const timer = setTimeout(() => {
@@ -438,7 +427,6 @@ export const useGameManager = () => {
     }
   }, [isHeroTurn, gameState, hero, villain, villainTurn]);
 
-  // Timer de defesa automática para o herói
   useEffect(() => {
     if (isHeroTurn && villain.incomingAttack && gameState === 'playing') {
       setTimeLeft(5);
@@ -455,16 +443,14 @@ export const useGameManager = () => {
       };
     }
   }, [isHeroTurn, villain.incomingAttack, gameState]);
-
-  // Aplica dano automático quando o tempo acabar (sem executar ação)
+  
   useEffect(() => {
     if (timeLeft === 0 && gameStateRef.current.isHeroTurn && gameStateRef.current.villain.incomingAttack && gameStateRef.current.gameState === 'playing') {
-      // Aplica dano por não defender
+      
       setHero(prev => {
         const newLife = Math.max(0, prev.life - ATTACK_DAMAGE);
         addLog(`💥 ${prev.name} sofreu ${ATTACK_DAMAGE} de dano por não defender! (vida: ${newLife})`);
         
-        // Verifica se morreu
         if (newLife <= 0) {
           setGameState('villainWins');
           addLog('💀 Vilão venceu! Herói foi derrotado!');
@@ -487,12 +473,11 @@ export const useGameManager = () => {
     }
   }, [timeLeft]);
 
-  // Atualiza ações desabilitadas baseado no estado
+  
   useEffect(() => {
     const disabled = [];
     
     if (villain.incomingAttack) {
-      // Se há ataque vindo, não pode atacar nem usar poção sem sofrer dano
       disabled.push('attack');
       disabled.push('usePotion');
     }
@@ -504,7 +489,7 @@ export const useGameManager = () => {
     setDisabledActions(disabled);
   }, [villain.incomingAttack, hero.potions]);
 
-  // Reset do jogo
+  
   const resetGame = useCallback(() => {
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
