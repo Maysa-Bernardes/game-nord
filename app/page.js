@@ -2,6 +2,8 @@
 import { useGameManager, HERO_MAX_DEFENSE } from "@/app/hooks/gameManager";
 import "./style.css"
 
+const BASEPATH = '/game-nord';
+
 export default function Home() {
   const {
     hero,
@@ -54,7 +56,7 @@ export default function Home() {
             </div>
           </div>
           <div className="character-image">
-            <img src="/heroi.svg" alt="RAGNAR" />
+            <img src={`${BASEPATH}/heroi.svg`} alt="RAGNAR" />
           </div>
         </div>
 
@@ -80,7 +82,7 @@ export default function Home() {
             </div>
           </div>
           <div className="character-image">
-            <img src="/vilao.svg" alt="BJORN" />
+            <img src={`${BASEPATH}/vilao.svg`} alt="BJORN" />
           </div>
           <div className="villain-action">
             {villainLastAction && (
